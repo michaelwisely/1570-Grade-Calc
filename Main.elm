@@ -1,7 +1,5 @@
-
-import CounterList exposing (init, update, view)
+import Assessment exposing (init, update, view)
 import StartApp.Simple exposing (start)
-
 
 main =
   start
