@@ -1,4 +1,4 @@
-import Assessment exposing (init, update, view)
+import AssessmentList exposing (init, update, view)
 import StartApp.Simple exposing (start)
 
 main =

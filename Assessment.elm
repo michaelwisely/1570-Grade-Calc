@@ -1,4 +1,4 @@
-module Assessment (Assessment, init, Action, update, view) where
+module Assessment (Model, Kind(Assignment,Project,Exam,Final), Action, update, view) where
 
 import Debug
 import Html exposing (..)
@@ -9,15 +9,12 @@ import String exposing (toInt)
 
 -- MODEL
 
-type alias Assessment =
+type Kind = Assignment | Project | Exam | Final
+type alias Model =
   { earned : Int
   , worth : Int
-  }
-
-init : Assessment
-init =
-  { earned = 0
-  , worth = 100
+  , kind : Kind
+  , name : String
   }
 
 
@@ -25,30 +22,24 @@ init =
 
 type Action = Earned Int | Worth Int
 
-toEarned : Int -> Action
-toEarned x = Earned x
-
-toWorth : Int -> Action
-toWorth x = Worth x
-
-update : Action -> Assessment -> Assessment
-update action eval =
+update : Action -> Model -> Model
+update action model =
   case action of
     Earned x ->
-      if x >= 0 && x <= eval.worth then
-        Debug.watch "meh" { eval | earned <- x }
+      if x >= 0 && x <= model.worth then
+        { model | earned <- x }
       else
-        eval
+        model
     Worth x ->
       if x > 0 then
-        { eval | worth <- x }
+        { model | worth <- x }
       else
-        eval
+        model
 
 
 -- VIEW
 
-toMessage : Signal.Address Action -> Assessment -> (Int -> Action)-> String -> Signal.Message
+toMessage : Signal.Address Action -> Model -> (Int -> Action)-> String -> Signal.Message
 toMessage address previous toAction  value =
   case toInt value of
     Ok intVal ->
@@ -56,35 +47,19 @@ toMessage address previous toAction  value =
     Err _ ->
       Signal.message address (toAction previous.earned)
 
-view : Signal.Address Action -> Assessment -> Html
-view address eval =
+view : Signal.Address Action -> Model -> Html
+view address model =
   let
-    toMessage' = toMessage address eval
+    toMessage' = toMessage address model
   in
-    div []
-      [ input
-          [ value (toString eval.earned)
-          , on "input" targetValue (toMessage' toEarned)
-          , countStyle
-          ]
-        []
-      , input
-          [ value (toString eval.worth)
-          , on "input" targetValue (toMessage' toWorth)
-          , countStyle
-          ]
-        []
-      , text (toString eval)
+    tr []
+      [ td [] [ text (model.name ++ " ") ]
+
+      , td [] [ input
+                    [ value (toString model.earned)
+                    , on "input" targetValue (toMessage' Earned)
+                    ]
+                    []
+              , text (" / " ++ (toString model.worth))
+              ]
       ]
-
-(=:) = (,)
-
-countStyle : Attribute
-countStyle =
-  style
-    [ "font-size" =: "20px"
-    , ("font-family", "monospace")
-    , ("display", "inline-block")
-    , ("width", "50px")
-    , ("text-align", "center")
-    ]
