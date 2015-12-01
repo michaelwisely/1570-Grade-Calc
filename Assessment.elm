@@ -1,6 +1,8 @@
 module Assessment (Model, Kind(Assignment,Project,Exam,Final), Action, update, view) where
 
 import Debug
+import Maybe exposing (Maybe(Just, Nothing))
+import Result exposing (Result(Ok, Err))
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -11,7 +13,7 @@ import String exposing (toInt)
 
 type Kind = Assignment | Project | Exam | Final
 type alias Model =
-  { earned : Int
+  { earned : Result String Int
   , worth : Int
   , kind : Kind
   , name : String
@@ -20,44 +22,42 @@ type alias Model =
 
 -- UPDATE
 
-type Action = Earned Int | Worth Int
+type Action = SetEarned String
+
+validateEarned : String -> Model -> Model
+validateEarned val model =
+  case toInt val of
+    Ok earned ->
+      if earned >= 0 && earned <= model.worth then
+        { model | earned = Ok earned }
+      else
+        { model | earned = Err "Out of range" }
+    Err _ ->
+      { model | earned = Err "Not an integer" }
 
 update : Action -> Model -> Model
 update action model =
   case action of
-    Earned x ->
-      if x >= 0 && x <= model.worth then
-        { model | earned = x }
-      else
-        model
-    Worth x ->
-      if x > 0 then
-        { model | worth = x }
-      else
-        model
-
+    SetEarned enteredValue ->
+      validateEarned enteredValue model
 
 -- VIEW
 
-toMessage : Signal.Address Action -> Model -> (Int -> Action)-> String -> Signal.Message
-toMessage address previous toAction  value =
-  case toInt value of
-    Ok intVal ->
-      Signal.message address (toAction intVal)
-    Err _ ->
-      Signal.message address (toAction previous.earned)
+toMessage : Signal.Address Action -> String -> Signal.Message
+toMessage address value =
+  Signal.message address (SetEarned value)
 
 view : Signal.Address Action -> Model -> Html
 view address model =
   let
-    toMessage' = toMessage address model
+    toMessage' = toMessage address
   in
     tr []
       [ td [] [ text (model.name ++ " ") ]
 
       , td [] [ input
                     [ value (toString model.earned)
-                    , on "input" targetValue (toMessage' Earned)
+                    , on "input" targetValue toMessage'
                     ]
                     []
               , text (" / " ++ (toString model.worth))
