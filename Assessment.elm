@@ -27,12 +27,12 @@ update action model =
   case action of
     Earned x ->
       if x >= 0 && x <= model.worth then
-        { model | earned <- x }
+        { model | earned = x }
       else
         model
     Worth x ->
       if x > 0 then
-        { model | worth <- x }
+        { model | worth = x }
       else
         model
 
