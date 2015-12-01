@@ -1,2 +1,2 @@
-# 1570-Grade-Calc
+# grade_calc
 A grade calculator written in Elm
