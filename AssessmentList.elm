@@ -105,28 +105,39 @@ courseAverage model =
 view : Signal.Address Action -> Model -> Html
 view address model =
   let
+    display = \x -> case x of
+                      Ok value -> text (toString value)
+                      Err msg -> span [error] [ text "Please fix the error above." ]
     counters = List.indexedMap (viewAssessment address) model
     assignmentAverage = averageResults <| filterKind Assignment model
     examAverage = averageResults <| filterKind Exam model
     withFinalAverage = replacedFinal model
+    examStyle = case Result.map2 (>) examAverage withFinalAverage of
+                  Ok betterExams -> if betterExams then [chosen] else []
+                  Err _ -> []
+    finalStyle = case Result.map2 (>) examAverage withFinalAverage of
+                  Ok betterExams -> if not betterExams then [chosen] else []
+                  Err _ -> []
   in
     div []
           [ table [] counters
           , p []
                 [ text "Assignment Average: "
-                , text (toString assignmentAverage)
+                , case assignmentAverage of
+                    Ok x -> text (toString x)
+                    Err msg -> text msg
                 ]
-          , p []
+          , p ([] ++ examStyle)
                 [ text "Regular Exam Average: "
-                , text (toString examAverage)
+                , display examAverage
                 ]
-          , p []
+          , p ([] ++ finalStyle)
                 [ text "Replaced Final Exam Average: "
-                , text (toString withFinalAverage)
+                , display withFinalAverage
                 ]
           , p []
                 [ text "Weighted Course Average: "
-                , text (toString (courseAverage model))
+                , display (courseAverage model)
                 ]
           ]
 
@@ -136,7 +147,9 @@ viewAssessment address index model =
   Assessment.view (Signal.forwardTo address (Update index)) model
 
 chosen : Attribute
-chosen = style [("color", "green")]
+chosen = style [ ("color", "green")
+               , ("font-weight", "bold") ]
 
-unchosen : Attribute
-unchosen = style [("color", "black")]
+error : Attribute
+error = style [ ("color", "red")
+               , ("font-weight", "bold") ]

@@ -43,23 +43,22 @@ update action model =
 
 -- VIEW
 
-toMessage : Signal.Address Action -> String -> Signal.Message
-toMessage address value =
-  Signal.message address (SetEarned value)
-
 view : Signal.Address Action -> Model -> Html
 view address model =
   let
-    toMessage' = toMessage address
+    toMessage = \x -> Signal.message address (SetEarned x)
+    error = case model.earned of
+              Ok  _ -> ""
+              Err msg -> msg
   in
     tr []
       [ td [] [ text (model.name ++ " ") ]
 
       , td [] [ input
-                    [ value (toString model.earned)
-                    , on "input" targetValue toMessage'
-                    ]
+                    [ on "input" targetValue toMessage ]
                     []
               , text (" / " ++ (toString model.worth))
+              ]
+      , td [] [ text error
               ]
       ]
