@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
     "summary": "A simple app for calculating weighted grades",
-    "repository": "https://github.com/michaelwisely/grade_calc.git",
+    "repository": "https://github.com/michaelwisely/grade-calc.git",
     "license": "BSD3",
     "source-directories": [
         "."
