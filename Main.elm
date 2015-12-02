@@ -1,6 +1,7 @@
 import Assessment exposing (Kind(Assignment,Exam,Project,Final))
 import AssessmentList exposing (update, view)
 import StartApp.Simple exposing (start)
+import Html
 
 init : AssessmentList.Model
 init =
@@ -23,6 +24,7 @@ init =
     , { name = "Final", kind = Final, earned = Err "Blank!", worth = 150 }
     ]
 
+main : Signal Html.Html
 main =
   start
     { model = init
